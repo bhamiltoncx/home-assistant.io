@@ -12,12 +12,15 @@ ha_codeowners:
 ha_domain: unifi
 ha_platforms:
   - button
+  - date
   - device_tracker
   - diagnostics
   - image
   - light
+  - select
   - sensor
   - switch
+  - time
   - update
 ha_integration_type: hub
 ha_quality_scale: silver
@@ -276,6 +279,31 @@ Get entities reporting whether a Zone-Based Firewall Policy is in effect right n
 
 The schedule is evaluated in the time zone of the UniFi Network application, not Home Assistant's. A policy with no schedule, or one with a schedule Home Assistant doesn't recognize, reports an unknown state. These sensors are disabled by default.
 
+## Firewall policy schedules
+
+You can change the schedule of each Zone-Based Firewall Policy you created, for example to block a network from now until tomorrow morning. These entities are disabled by default and require admin privileges. Changes are sent to the UniFi Network application right away.
+
+- **Schedule** (select): The schedule mode: **Always**, **Every day**, **Every week**, **One time**, or **Custom**. **Every week** and **Custom** can only be chosen in the UniFi Network application.
+- **Schedule start** and **Schedule end** (time): The time window the policy applies in each day.
+- **Schedule start date** (date): The day a **One time** schedule applies on, or the first day of a **Custom** schedule.
+- **Schedule end date** (date): The last day of a **Custom** schedule. It must be after the start date.
+
+Each mode uses only some of these settings:
+
+| Mode | Start and end time | Start date | End date |
+| ---------- | ------------------ | ---------- | -------- |
+| Always | | | |
+| Every day | ✔ | | |
+| Every week | ✔ | | |
+| One time | ✔ | ✔ | |
+| Custom | ✔ | ✔ | ✔ |
+
+Settings the current mode doesn't use show an unknown state, and can't be changed until you choose a mode that uses them. Changing a setting never changes the mode.
+
+When you change the mode, the start and end times are kept. If the policy didn't have a time window, it gets 09:00 to 12:00, like in the UniFi Network application. A **One time** schedule starts on today's date, and a **Custom** schedule starts today and ends tomorrow. Choosing **One time** again, while it's already selected, also moves it to today. Today's date is taken from the UniFi Network application's time zone. If a schedule's end time is earlier than its start time, the window runs past midnight into the next day.
+
+If the UniFi Network application rejects a change, the error shows its reason.
+
 ## Light
 
 The Light entities will only be available for UniFi access points that support LED ring customization. Not all access points have this capability.
@@ -293,6 +321,41 @@ Changes may take over 5 seconds to apply as the device must adopt a new configur
 This will show if there are firmware updates available for the UniFi network devices connected to the controller. If the configured user has admin privileges, the firmware upgrades can also be installed directly from Home Assistant.
 
 ## Examples
+
+### Block a network until tomorrow morning
+
+This script turns on a Zone-Based Firewall Policy from now until 08:00 the next morning. The policy stops applying on its own at 08:00. The example assumes a policy named **Block kids' Wi-Fi** with its schedule entities enabled.
+
+Choose the mode first: the time entities can't be changed while the policy's mode has no time window. Choosing **One time** dates the schedule today, and an end time earlier than the start time runs into the next morning.
+
+{% raw %}
+
+```yaml
+script:
+  block_kids_wifi_until_morning:
+    alias: "Block kids' Wi-Fi until morning"
+    sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.unifi_network_block_kids_wi_fi_schedule
+        data:
+          option: one_time
+      - action: time.set_value
+        target:
+          entity_id: time.unifi_network_block_kids_wi_fi_schedule_start
+        data:
+          time: "{{ now().strftime('%H:%M:00') }}"
+      - action: time.set_value
+        target:
+          entity_id: time.unifi_network_block_kids_wi_fi_schedule_end
+        data:
+          time: "08:00:00"
+      - action: switch.turn_on
+        target:
+          entity_id: switch.unifi_network_block_kids_wi_fi
+```
+
+{% endraw %}
 
 ### Community blueprints
 
