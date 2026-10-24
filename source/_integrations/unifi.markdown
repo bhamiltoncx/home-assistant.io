@@ -283,24 +283,26 @@ The schedule is evaluated in the time zone of the UniFi Network application, not
 
 You can change the schedule of each Zone-Based Firewall Policy you created, for example to block a network from now until tomorrow morning. These entities are disabled by default and require admin privileges. Changes are sent to the UniFi Network application right away.
 
-- **Schedule** (select): The schedule mode: **Always**, **Every day**, **Every week**, **One time**, or **Custom**. **Every week** and **Custom** can only be chosen in the UniFi Network application.
+- **Schedule** (select): The schedule mode: **Always**, **Every day**, **Every week**, **One time**, or **Custom**.
 - **Schedule start** and **Schedule end** (time): The time window the policy applies in each day.
+- **Schedule all day** (switch): Whether an **Every week** or **Custom** schedule covers whole days instead of a time window.
+- **Schedule Monday** to **Schedule Sunday** (switches): The days of the week an **Every week** or **Custom** schedule applies on. At least one day must stay selected, so to move a schedule to another day, turn the new day on before turning the old one off.
 - **Schedule start date** (date): The day a **One time** schedule applies on, or the first day of a **Custom** schedule.
 - **Schedule end date** (date): The last day of a **Custom** schedule. It must be after the start date.
 
 Each mode uses only some of these settings:
 
-| Mode | Start and end time | Start date | End date |
-| ---------- | ------------------ | ---------- | -------- |
-| Always | | | |
-| Every day | ✔ | | |
-| Every week | ✔ | | |
-| One time | ✔ | ✔ | |
-| Custom | ✔ | ✔ | ✔ |
+| Mode | Start and end time | Start date | End date | Days and all day |
+| ---------- | ------------------ | ---------- | -------- | ---------------- |
+| Always | | | | |
+| Every day | ✔ | | | |
+| Every week | ✔ (unless all day) | | | ✔ |
+| One time | ✔ | ✔ | | |
+| Custom | ✔ (unless all day) | ✔ | ✔ | ✔ |
 
 Settings the current mode doesn't use show an unknown state, and can't be changed until you choose a mode that uses them. Changing a setting never changes the mode.
 
-When you change the mode, the start and end times are kept. If the policy didn't have a time window, it gets 09:00 to 12:00, like in the UniFi Network application. A **One time** schedule starts on today's date, and a **Custom** schedule starts today and ends tomorrow. Choosing **One time** again, while it's already selected, also moves it to today. Today's date is taken from the UniFi Network application's time zone. If a schedule's end time is earlier than its start time, the window runs past midnight into the next day.
+When you change the mode, the start and end times are kept. If the policy didn't have a time window, it gets 09:00 to 12:00, like in the UniFi Network application. A **One time** schedule starts on today's date, and a **Custom** schedule starts today and ends tomorrow. Choosing **One time** again, while it's already selected, also moves it to today. Today's date is taken from the UniFi Network application's time zone. If a schedule's end time is earlier than its start time, the window runs past midnight into the next day. Choosing **Every week** or **Custom** from another mode selects all seven days. Changing between **Every week** and **Custom** keeps the days and the all-day setting. Turning **Schedule all day** off uses the policy's stored time window, or 09:00 to 12:00 if it has none. Turning all day on removes the stored window, so turning it on and then off gives 09:00 to 12:00, like in the UniFi Network application.
 
 If the UniFi Network application rejects a change, the error shows its reason.
 
